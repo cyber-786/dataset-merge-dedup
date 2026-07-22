@@ -95,6 +95,13 @@
       "type": "integer",
       "description": "Safety limit - stop after reading this many total items across all source datasets. Leave empty for no limit.",
       "minimum": 1
+    },
+    "apifyApiToken": {
+      "title": "Your Apify API token (optional, needed for reading datasets from OTHER runs)",
+      "type": "string",
+      "description": "Actor runs can only access their own storage by default. If your source dataset(s) came from a different actor run, paste your personal API token here (Console -> Settings -> Integrations) so this actor can read them. Not needed if you're only reading datasets produced by this same actor.",
+      "editor": "textfield",
+      "isSecret": true
     }
   },
   "required": ["datasetIds"]
