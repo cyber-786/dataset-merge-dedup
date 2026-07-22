@@ -1,4 +1,5 @@
 const { Actor } = require('apify');
+const { ApifyClient } = require('apify-client');
 const { similarity, stripBusinessSuffixes } = require('./similarity');
 
 /**
@@ -69,6 +70,37 @@ function isFuzzyMatch(valuesA, valuesB, threshold, algorithm) {
     return true;
 }
 
+/**
+ * Iterate every item in a dataset, handling pagination.
+ *
+ * Actor runs default to "LIMITED_PERMISSIONS" - they can only access their
+ * own run's storages, not other datasets in the account (even ones you own).
+ * If the caller supplies their personal Apify API token (apifyApiToken
+ * input field), we use the ApifyClient directly instead, which authenticates
+ * as the account owner and can read any dataset you have access to.
+ */
+async function forEachItemInDataset(idOrName, apifyApiToken, onItem) {
+    if (apifyApiToken) {
+        const client = new ApifyClient({ token: apifyApiToken });
+        const datasetClient = client.dataset(idOrName);
+        const limit = 1000;
+        let offset = 0;
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const { items } = await datasetClient.listItems({ offset, limit });
+            if (!items || items.length === 0) break;
+            for (const item of items) {
+                await onItem(item);
+            }
+            offset += items.length;
+            if (items.length < limit) break;
+        }
+    } else {
+        const dataset = await Actor.openDataset(idOrName);
+        await dataset.forEach(onItem);
+    }
+}
+
 Actor.main(async () => {
     const input = await Actor.getInput();
     if (!input) {
@@ -89,6 +121,7 @@ Actor.main(async () => {
         trimWhitespace = true,
         outputDatasetName,
         maxItems,
+        apifyApiToken,
     } = input;
 
     if (!Array.isArray(datasetIds) || datasetIds.length === 0) {
@@ -145,18 +178,10 @@ Actor.main(async () => {
     for (const idOrName of datasetIds) {
         if (hitLimit) break;
 
-        let sourceDataset;
-        try {
-            sourceDataset = await Actor.openDataset(idOrName);
-        } catch (err) {
-            console.warn(`Could not open dataset "${idOrName}": ${err.message}. Skipping it.`);
-            continue;
-        }
-
         console.log(`Reading from dataset: ${idOrName}`);
 
-        // Dataset.forEach handles pagination internally for datasets of any size.
-        await sourceDataset.forEach(async (item) => {
+        try {
+            await forEachItemInDataset(idOrName, apifyApiToken, async (item) => {
             if (maxItems && totalRead >= maxItems) {
                 hitLimit = true;
                 return;
@@ -218,7 +243,11 @@ Actor.main(async () => {
                 }
                 bufferForLast.set(key, item); // (re)insert at the end = latest position
             }
-        });
+            });
+        } catch (err) {
+            console.warn(`Could not read dataset "${idOrName}": ${err.message}. Skipping it.`);
+            continue;
+        }
     }
 
     // Flush buffered "last occurrence" items now that all sources are read.
