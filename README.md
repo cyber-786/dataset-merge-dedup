@@ -45,6 +45,24 @@ tools; this brings it to any dataset for a few cents per 1K items.
 | `trimWhitespace` | boolean | Default `true`. |
 | `outputDatasetName` | string | Optional. Write to a named dataset instead of the default one. |
 | `maxItems` | integer | Optional safety cap on total items read. |
+| `apifyApiToken` | string (secret) | Optional. Needed only if `datasetIds` belong to a *different* actor run than this one. See "Cross-actor dataset access" below. |
+
+## Cross-actor dataset access (important)
+
+Apify actor runs default to `LIMITED_PERMISSIONS` - they can only read/write their **own**
+run's storage, not other datasets in your account, even ones you own. If you try to merge
+a dataset produced by a different actor (e.g. a scraper's output) without a token, you'll
+see the run finish instantly with `totalItemsRead: 0` and a log line like:
+
+```
+Could not read dataset "xxxxx": Insufficient permissions for the dataset...
+```
+
+**Fix:** paste your personal Apify API token into the `apifyApiToken` input field
+(Console -> Settings -> Integrations -> your token). With it, the actor authenticates as
+you directly via the Apify API instead of the sandboxed run token, and can read any
+dataset your account has access to. You don't need this field at all if you're only
+merging datasets that this same actor already wrote.
 
 ## Example input — exact mode
 
