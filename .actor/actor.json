@@ -3,7 +3,7 @@
   "name": "dataset-merge-dedup",
   "title": "Dataset Merge & Deduplicator",
   "description": "Merge and deduplicate items across one or more Apify datasets by any field combination, including fuzzy/near-duplicate matching (Levenshtein, Jaro-Winkler, business-suffix stripping), nested-field support, and first/last occurrence control.",
-  "version": "2.0",
+  "version": "2.1",
   "input": "./input_schema.json",
   "dockerfile": "../Dockerfile"
 }
