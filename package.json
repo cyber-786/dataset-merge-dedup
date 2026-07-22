@@ -1,6 +1,6 @@
 {
   "name": "dataset-merge-dedup",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Merge and deduplicate items from one or more Apify datasets by any field combination.",
   "main": "main.js",
   "type": "commonjs",
