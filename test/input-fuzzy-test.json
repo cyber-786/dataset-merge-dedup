@@ -1,0 +1,11 @@
+{
+  "datasetIds": ["PASTE_YOUR_DATASET_ID_HERE"],
+  "matchMode": "fuzzy",
+  "fuzzyFields": ["companyName"],
+  "similarityAlgorithm": "jaroWinkler",
+  "similarityThreshold": 0.85,
+  "stripBusinessSuffixesOption": true,
+  "keepOccurrence": "first",
+  "caseInsensitive": true,
+  "trimWhitespace": true
+}

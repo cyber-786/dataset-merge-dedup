@@ -1,0 +1,8 @@
+{
+  "datasetIds": ["PASTE_YOUR_DATASET_ID_HERE"],
+  "matchMode": "exact",
+  "dedupFields": ["email"],
+  "keepOccurrence": "first",
+  "caseInsensitive": true,
+  "trimWhitespace": true
+}
