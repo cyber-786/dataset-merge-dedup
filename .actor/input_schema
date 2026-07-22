@@ -1,0 +1,101 @@
+{
+  "title": "Dataset Merge & Deduplicator Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "datasetIds": {
+      "title": "Source dataset IDs or names",
+      "type": "array",
+      "description": "One or more Apify dataset IDs (or names) to read items from and merge together.",
+      "editor": "stringList",
+      "prefill": []
+    },
+    "matchMode": {
+      "title": "Matching mode",
+      "type": "string",
+      "description": "Exact = fast, hash-based matching on exact field values. Fuzzy = catches near-duplicates like typos, 'Corp' vs 'Corporation', abbreviations.",
+      "editor": "select",
+      "enum": ["exact", "fuzzy"],
+      "enumTitles": ["Exact match", "Fuzzy match (near-duplicates)"],
+      "default": "exact"
+    },
+    "dedupFields": {
+      "title": "Deduplication fields (exact mode)",
+      "type": "array",
+      "description": "Used when matchMode = exact. Field names used as the dedup key. Supports dot notation for nested fields, e.g. 'contact.email'. Leave empty to only merge (no deduplication).",
+      "editor": "stringList",
+      "prefill": ["url"]
+    },
+    "fuzzyFields": {
+      "title": "Fuzzy match fields (fuzzy mode)",
+      "type": "array",
+      "description": "Used when matchMode = fuzzy. Field(s) to compare with similarity scoring instead of exact equality. Supports dot notation. All listed fields must meet the threshold for two items to count as duplicates.",
+      "editor": "stringList",
+      "prefill": ["name"]
+    },
+    "similarityAlgorithm": {
+      "title": "Similarity algorithm (fuzzy mode)",
+      "type": "string",
+      "description": "Levenshtein: general-purpose edit-distance, good for any text. Jaro-Winkler: weights matching prefixes more heavily, best for names and company names.",
+      "editor": "select",
+      "enum": ["levenshtein", "jaroWinkler"],
+      "enumTitles": ["Levenshtein (general text)", "Jaro-Winkler (names/companies)"],
+      "default": "levenshtein"
+    },
+    "similarityThreshold": {
+      "title": "Similarity threshold (fuzzy mode)",
+      "type": "number",
+      "description": "0 to 1. Two values are considered duplicates when their similarity score is at or above this threshold. 0.85-0.9 is a safe starting point; lower values catch more duplicates but risk false matches.",
+      "default": 0.85,
+      "minimum": 0,
+      "maximum": 1
+    },
+    "blockingPrefixLength": {
+      "title": "Blocking prefix length (fuzzy mode)",
+      "type": "integer",
+      "description": "Performance safeguard: only compares items whose normalized fuzzy field shares this many starting characters. Prevents slow O(n^2) comparisons on large datasets. Set to 0 to compare every item against every other item (most accurate, slowest - fine for a few thousand rows, not for millions).",
+      "default": 3,
+      "minimum": 0
+    },
+    "stripBusinessSuffixesOption": {
+      "title": "Strip business suffixes (fuzzy mode)",
+      "type": "boolean",
+      "description": "Removes common suffixes (Inc, Corp, LLC, Ltd, GmbH, etc.) before comparing, so 'Microsoft Corp' and 'Microsoft Corporation' are recognized as the same company.",
+      "default": false
+    },
+    "keepOccurrence": {
+      "title": "Which occurrence to keep",
+      "type": "string",
+      "description": "When duplicates are found, keep the first or the last occurrence encountered (source order = order of datasetIds, then item order within each dataset).",
+      "editor": "select",
+      "enum": ["first", "last"],
+      "enumTitles": ["Keep first occurrence", "Keep last occurrence"],
+      "default": "first"
+    },
+    "caseInsensitive": {
+      "title": "Case-insensitive matching",
+      "type": "boolean",
+      "description": "Ignore letter case when comparing dedup field values.",
+      "default": true
+    },
+    "trimWhitespace": {
+      "title": "Trim whitespace",
+      "type": "boolean",
+      "description": "Trim leading/trailing whitespace from dedup field values before comparing.",
+      "default": true
+    },
+    "outputDatasetName": {
+      "title": "Output dataset name (optional)",
+      "type": "string",
+      "description": "If set, results are written to a named dataset with this name/ID instead of the run's default dataset.",
+      "editor": "textfield"
+    },
+    "maxItems": {
+      "title": "Max items to process (optional)",
+      "type": "integer",
+      "description": "Safety limit - stop after reading this many total items across all source datasets. Leave empty for no limit.",
+      "minimum": 1
+    }
+  },
+  "required": ["datasetIds"]
+}
